@@ -1,0 +1,4 @@
+Tarefa 3 (combinar tarefa 1 e 2).
+
+objetivo: dado o nome de uma cidade retornar todas as informações das N cidades vizinhas mais próximas. 
+descrição: crie uma outra tabela hash que dado o nome da cidade retorne o codigo_ibge. De posse do codigo_ibge utilize o código da tarefa 2 para retornar os vizinhos mais próximos e o código da tarefa 1 para retornar as informações das cidades vizinhas.
