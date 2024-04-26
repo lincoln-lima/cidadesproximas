@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "../include/youtube_episode_jsense/jsense.h"
+#include "hash.c"
 
 #define QTD_CIDADES 5570
 
@@ -57,7 +58,7 @@ void printa_municipio(Municipio * mun) {
 }
 
 //informe o json JSENSE e a posição da cidade no arquivo
-void salvando_municipio(JSENSE * arq, int pos) {
+void * salva_municipio_json(JSENSE * arq, int pos) {
 	int error;
 
 	char * campos[9] = 
@@ -116,14 +117,22 @@ void salvando_municipio(JSENSE * arq, int pos) {
 
 	Municipio * cidade = aloca_municipio(cod_ibge, nome, latitude, longitude, capital, cod_uf, siafi_id, ddd, fuso);
 
-	printa_municipio(cidade);
+	return cidade;
 }
 
 int main() {
 	JSENSE * arq = jse_from_file("./file/municipios.json");
 	
-	for(int i = 0; i < QTD_CIDADES; i++) salvando_municipio(arq, i);
+	//for(int i = 0; i < QTD_CIDADES; i++) salvando_municipio(arq, i);
+
+	thash * hash;
+	constroi(hash, 5570, get_key_municipio);
+	insere(hash, salvando_municipio(arq, 0));
+	Municipio * mun = busca(hash, 5200050);
 	
+	printf("%d - chave do objeto\n", mun->cod_ibge);
+	printf("%d - chave da hash\n", hash->get_key(mun));
+
 	jse_free(arq);
 
 	return EXIT_SUCCESS;
