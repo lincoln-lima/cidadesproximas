@@ -17,7 +17,7 @@ u_int32_t int32hash(u_int32_t a)
 	return a;
 }
 
-int insere(thash * hash, void * bucket) {
+int insere_hash(thash * hash, void * bucket) {
     int pos = int32hash(hash->get_key(bucket)) % hash->max_size;
     int ret;
 
@@ -37,13 +37,14 @@ int insere(thash * hash, void * bucket) {
         hash->size++;
 	//acréscimo ao tamanho ocupado pelo vetor;
 
+	printf("%d --> pos\n", pos);
 	ret = EXIT_SUCCESS;
     }
 
     return ret;
 }
 
-void * busca(thash * hash, int key) {
+void * busca_hash(thash * hash, int key) {
     int pos = int32hash(key) % hash->max_size;
 
     //criação do objeto para retorno
@@ -59,7 +60,7 @@ void * busca(thash * hash, int key) {
     return ret;
 }
 
-int constroi(thash * hash, int n_buckets, int (* get_key)(void *)) {
+int constroi_hash(thash * hash, int n_buckets, int (* get_key)(void *)) {
     int ret;
     //aloca espaco para array da tabela
     hash->array = calloc(sizeof(void *), n_buckets + 1);
@@ -81,7 +82,7 @@ int constroi(thash * hash, int n_buckets, int (* get_key)(void *)) {
 }
 
 //remove elemento específico
-int remover(thash * hash, int key) {
+int remover_hash(thash * hash, int key) {
     int ret = EXIT_FAILURE;
     int pos = int32hash(key) % hash->max_size;
 
@@ -103,7 +104,7 @@ int remover(thash * hash, int key) {
 }
 
 //elimina todos os registros da tabela
-void apaga(thash * hash) {
+void apaga_hash(thash * hash) {
    //libera posição a posição do array
     for(int pos = 0; pos < hash->max_size; pos++) {
 	if(hash->array[pos] != 0 && hash->array[pos] != hash->deleted) free((void *) hash->array[pos]);
