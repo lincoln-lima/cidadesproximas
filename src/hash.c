@@ -105,11 +105,19 @@ int remover_hash(thash * hash, int key) {
 
 //elimina todos os registros da tabela
 void apaga_hash(thash * hash) {
-   //libera posição a posição do array
+    //libera posição a posição do array
     for(int pos = 0; pos < hash->max_size; pos++) {
 	if(hash->array[pos] != 0 && hash->array[pos] != hash->deleted) free((void *) hash->array[pos]);
     }
 
-   //libera o array
-   free(hash->array);
+    //libera o array
+    free(hash->array);
+}
+
+void printa_hash(thash * hash) {
+    for(int pos = 0; pos < hash->max_size; pos++) {
+        printf("%d: ", pos);
+	if(hash->array[pos] != 0) printf("%d\n\n", hash->get_key((void *) hash->array[pos]));
+	else printf("%ld\n\n", hash->array[pos]);
+    }
 }

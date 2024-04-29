@@ -61,7 +61,7 @@ void printa_municipio(Municipio * mun) {
 }
 
 //informe o json JSENSE e a posição da cidade no arquivo
-void salva_municipio_json(JSENSE * arq, int pos) {
+void salva_municipio_json_hash(JSENSE * arq, int pos, thash * hash) {
 	int error;
 
 	char * campos[9] = 
@@ -120,21 +120,23 @@ void salva_municipio_json(JSENSE * arq, int pos) {
 
 	Municipio * cidade = aloca_municipio(cod_ibge, nome, latitude, longitude, capital, cod_uf, siafi_id, ddd, fuso);
 
-	thash hash;
-	constroi_hash(&hash, TAM_HASH, get_key_municipio);
-	insere_hash(&hash, cidade);
-	Municipio * mun = busca_hash(&hash, 5200050);
+	insere_hash(hash, cidade);
+	//Municipio * mun = busca_hash(hash, cod_ibge);
 	
-	printf("%d - chave do objeto\n", mun->cod_ibge);
-	printf("%d - chave da hash\n", hash.get_key(mun));
+	//printf("%d - chave da hash\n", hash->get_key(mun));
 }
 
 int main() {
 	JSENSE * arq = jse_from_file("./file/municipios.json");
 	
-	//for(int i = 0; i < QTD_CIDADES; i++) salva_municipio_json(arq, i);
+	thash hash;
+	constroi_hash(&hash, TAM_HASH, get_key_municipio);
 
-	salva_municipio_json(arq, 0);
+	for(int i = 0; i < QTD_CIDADES; i++) salva_municipio_json_hash(arq, i, &hash);
+
+	printa_hash(&hash);
+
+	apaga_hash(&hash);
 
 	jse_free(arq);
 

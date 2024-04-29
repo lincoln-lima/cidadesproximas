@@ -15,4 +15,5 @@ void * busca_hash(thash * hash, int key);
 int constroi_hash(thash * hash, int n_buckets, int (* get_key)(void *));
 int remover_hash(thash * hash, int key);
 void apaga_hash(thash * hash);
+void printa_hash(thash * hash);
 #endif
