@@ -6,8 +6,10 @@
 
 #define QTD_CIDADES 5570
 #define TAM_HASH 11139
-//tamanho baseado na quantidade de dados
-//multiplicado por 2 associado ao primo mais proximo
+/* 
+ * tamanho baseado na quantidade de dados
+ * multiplicado por 2 associado ao primo mais próximo
+*/
 
 typedef struct {
 	int cod_ibge;
@@ -45,19 +47,16 @@ void * aloca_municipio(int ibge, char * nome, float latitude, float longitude, i
 
 //informe um ponteiro de Municipio e todas suas informações serão mostradas
 void printa_municipio(Municipio * mun) {
-	//printf("%d\n", mun->cod_ibge);
-	printf("%d\n", get_key_municipio(mun));
-	printf("%s\n", mun->nome);
-	printf("%f\n", mun->latitude);
-	printf("%f\n", mun->longitude);
-	printf("%d\n", mun->capital);
-	printf("%d\n", mun->cod_uf);
-	printf("%d\n", mun->siafi_id);
-	printf("%d\n", mun->ddd);
-	printf("%s\n", mun->fuso);	
-	printf("\n");
-
-	free(mun);
+	printf("EXIBINDO DADOS...\n\n");
+	printf("codigo_ibge: %d\n", mun->cod_ibge);
+	printf("nome: %s\n", mun->nome);
+	printf("latitude: %f\n", mun->latitude);
+	printf("longitude: %f\n", mun->longitude);
+	printf("capital: %d\n", mun->capital);
+	printf("codigo_uf: %d\n", mun->cod_uf);
+	printf("siafi_id: %d\n", mun->siafi_id);
+	printf("ddd: %d\n", mun->ddd);
+	printf("fuso_horario: %s\n", mun->fuso);
 }
 
 //informe o json JSENSE e a posição da cidade no arquivo
@@ -80,7 +79,7 @@ void salva_municipio_json_hash(JSENSE * arq, int pos, thash * hash) {
 	char operacao[20];
 	
 	int cod_ibge, capital, cod_uf, siafi_id, ddd;
-	char nome[50];
+	char nome[35];
 	char fuso[50];
 	float latitude, longitude;
 
@@ -118,12 +117,16 @@ void salva_municipio_json_hash(JSENSE * arq, int pos, thash * hash) {
 		}
 	}
 
-	Municipio * cidade = aloca_municipio(cod_ibge, nome, latitude, longitude, capital, cod_uf, siafi_id, ddd, fuso);
+	Municipio * mun = aloca_municipio(cod_ibge, nome, latitude, longitude, capital, cod_uf, siafi_id, ddd, fuso);
 
-	insere_hash(hash, cidade);
-	//Municipio * mun = busca_hash(hash, cod_ibge);
-	
-	//printf("%d - chave da hash\n", hash->get_key(mun));
+	insere_hash(hash, mun);
+}
+
+void busca_municipio_hash(thash * hash, int key) {
+	Municipio * mun = busca_hash(hash, key);
+
+	if(mun) printa_municipio(mun);
+	else printf("Município não encontrado...\n");
 }
 
 int main() {
@@ -135,6 +138,8 @@ int main() {
 	for(int i = 0; i < QTD_CIDADES; i++) salva_municipio_json_hash(arq, i, &hash);
 
 	printa_hash(&hash);
+
+	busca_municipio_hash(&hash, 3100104);
 
 	apaga_hash(&hash);
 

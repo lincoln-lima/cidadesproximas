@@ -1,7 +1,6 @@
 #include <stdlib.h>
 #include "../include/hash.h"
 
-//funcao especifica de has
 u_int32_t int32hash(u_int32_t a)
 {
 	/*
@@ -17,8 +16,19 @@ u_int32_t int32hash(u_int32_t a)
 	return a;
 }
 
+unsigned int fiftyhash(unsigned int x) {
+    /*
+     * Source:
+     * https://stackoverflow.com/questions/664014/what-integer-hash-function-are-good-that-accepts-an-integer-hash-key
+    */
+    x = ((x >> 16) ^ x) * 0x45d9f3b;
+    x = ((x >> 16) ^ x) * 0x45d9f3b;
+    x = (x >> 16) ^ x;
+    return x;
+}
+
 int insere_hash(thash * hash, void * bucket) {
-    int pos = int32hash(hash->get_key(bucket)) % hash->max_size;
+    int pos = fiftyhash(hash->get_key(bucket)) % hash->max_size;
     int ret;
 
     //checagem se o array da tabela está cheio
@@ -28,13 +38,14 @@ int insere_hash(thash * hash, void * bucket) {
     }
     else {
 	//garante que a posição para alocação da estrutura esteja desocupada
-        while(hash->array[pos] != 0 && hash->array[pos] != hash->deleted)
-	    pos = (pos+1) % hash->max_size;
-	    // sondagem linear dos elementos
-        
+	while(hash->array[pos] != 0 && hash->array[pos] != hash->deleted) pos = (pos+1) % hash->max_size;
+	    // hash duplo dos elementos
+	
+	//for(int i = 0; hash->array[pos] == 0 || hash->array[pos] == hash->deleted; i++) pos = (pos+1) % hash->max_size;
+
 	//armazena ponteiro para o bucket específico
-        hash->array[pos] = (uintptr_t) bucket;
-        hash->size++;
+	hash->array[pos] = (uintptr_t) bucket;
+	hash->size++;
 	//acréscimo ao tamanho ocupado pelo vetor;
 
 	printf("%d --> pos\n", pos);
@@ -45,16 +56,25 @@ int insere_hash(thash * hash, void * bucket) {
 }
 
 void * busca_hash(thash * hash, int key) {
-    int pos = int32hash(key) % hash->max_size;
+    int pos = fiftyhash(key) % hash->max_size;
 
     //criação do objeto para retorno
     void * ret = NULL; 
 
+    /*
     while(hash->array[pos] != 0 && ret == NULL) {
 	if(hash->get_key((void *) hash->array[pos]) == key) 
 	    ret = (void *) hash->array[pos];
 	else
-	    pos = (pos+1) % hash->max_size;
+	    pos = int32hash(pos) % hash->max_size;
+    }
+    */
+
+    for(int i = 0; hash->array[pos] == 0 || !ret; i++) {
+	if(hash->get_key((void *) hash->array[pos]) == key) 
+	    ret = (void *) hash->array[pos];
+	else
+    	    pos = (pos+1) % hash->max_size;
     }
 
     return ret;
@@ -84,8 +104,9 @@ int constroi_hash(thash * hash, int n_buckets, int (* get_key)(void *)) {
 //remove elemento específico
 int remover_hash(thash * hash, int key) {
     int ret = EXIT_FAILURE;
-    int pos = int32hash(key) % hash->max_size;
+    int pos = fiftyhash(key) % hash->max_size;
 
+    /*
     //caso determinada posição esteja nula, o elemento não deve existir
     while(hash->array[pos] != 0) {
 	//compara a chave do registro com a chave informada na chamada da função
@@ -97,7 +118,21 @@ int remover_hash(thash * hash, int key) {
 	    ret = EXIT_SUCCESS;
 	}
         else
-            pos = (pos+1) % hash->max_size;
+            pos = int32hash(pos) % hash->max_size;
+    }
+    */
+
+    for(int i = 0; hash->array[pos] == 0; i++) {
+	//compara a chave do registro com a chave informada na chamada da função
+        if(hash->get_key((void *) hash->array[pos]) == key) {
+	    //diminui tamanho ocupado, libera a posição e diz que a mesma foi deletada
+	    hash->size--;
+	    free((void *) hash->array[pos]);
+	    hash->array[pos] = hash->deleted;
+	    ret = EXIT_SUCCESS;
+	}
+        else
+	    pos = (pos+1) % hash->max_size;
     }
 
     return ret;
