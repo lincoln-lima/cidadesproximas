@@ -139,7 +139,7 @@ int main() {
 
 	printa_hash(&hash);
 
-	busca_municipio_hash(&hash, 3100104);
+	busca_municipio_hash(&hash, 5002704);
 
 	apaga_hash(&hash);
 
