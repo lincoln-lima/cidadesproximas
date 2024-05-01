@@ -2,3 +2,8 @@ Tarefa 2 (vizinhos mais próximo de uma cidade dado o seu codigo_ibge)
 
 objetivo:  Dado o código_ibge,  você deverá retornar o codigo_ibge das N cidades vizinhas mais próximas, onde N é um parâmetro do usuário.
 descrição: Para a busca pela vizinhança construa uma kdtree utilizando uma ABB (sugestão, consulte o chatgpt sobre esta estrutura para esta tarefa). Na KDtree você deve alternar latitude e longitude.
+
+--------------
+distância entre dois pontos:
+
+Dab² = (xb - xa)²-(yb - ya)²
