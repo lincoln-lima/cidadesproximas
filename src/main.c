@@ -141,7 +141,7 @@ int main() {
 
 	busca_municipio_hash(&hash, 5002704);
 
-	apaga_hash(&hash);
+	libera_hash(&hash);
 
 	jse_free(arq);
 

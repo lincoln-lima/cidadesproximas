@@ -27,6 +27,11 @@ unsigned int fiftyhash(unsigned int x) {
     return x;
 }
 
+int calcula_pos(int key, int i, thash * hash) {
+    // hash duplo dos elementos
+    return (fiftyhash(key) + i * int32hash(key)) % hash->max_size;
+}
+
 int insere_hash(thash * hash, void * bucket) {
     int ret;
 
@@ -41,8 +46,8 @@ int insere_hash(thash * hash, void * bucket) {
 	int i = 0;
 	
 	do {
-	    pos = (fiftyhash(key) + i++ * int32hash(key)) % hash->max_size;	
-	    // hash duplo dos elementos
+	    pos = calcula_pos(key, i, hash);
+	    i++; 
 	} while(hash->array[pos] != 0 && hash->array[pos] != hash->deleted);
 	//garante que a posição para alocação da estrutura esteja desocupada
 
@@ -63,11 +68,11 @@ void * busca_hash(thash * hash, int key) {
     void * ret = NULL; 
 
     int i = 0;
-    int pos = (fiftyhash(key) + i++ * int32hash(key)) % hash->max_size;
+    int pos = calcula_pos(key, i, hash); 
 
     for(i; hash->array[pos] != 0 && !ret; i++) {
 	if (hash->get_key((void *) hash->array[pos]) == key) ret = (void *) hash->array[pos];
-	else pos = (fiftyhash(key) + i * int32hash(key)) % hash->max_size;
+	else pos = calcula_pos(key, i, hash); 
     }
 
     return ret;
@@ -99,7 +104,7 @@ int remover_hash(thash * hash, int key) {
     int ret = EXIT_FAILURE;
 
     int i = 0;
-    int pos = (fiftyhash(key) + i++ * int32hash(key)) % hash->max_size;	
+    int pos = calcula_pos(key, i, hash); 
 
     //caso determinada posição esteja nula, o elemento não deve existir
     for(i; hash->array[pos] != 0; i++) {
@@ -111,14 +116,14 @@ int remover_hash(thash * hash, int key) {
 	    hash->array[pos] = hash->deleted;
 	    ret = EXIT_SUCCESS;
 	}
-        else pos = (fiftyhash(key) + i * int32hash(key)) % hash->max_size;	
+        else pos = calcula_pos(key, i, hash); 
     }
 
     return ret;
 }
 
 //elimina todos os registros da tabela
-void apaga_hash(thash * hash) {
+void libera_hash(thash * hash) {
     //libera posição a posição do array
     for(int pos = 0; pos < hash->max_size; pos++) {
 	if(hash->array[pos] != 0 && hash->array[pos] != hash->deleted) free((void *) hash->array[pos]);
