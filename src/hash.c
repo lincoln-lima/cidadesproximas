@@ -56,7 +56,7 @@ int insere_hash(thash * hash, void * bucket) {
 	hash->size++;
 	//acréscimo ao tamanho ocupado pelo vetor;
 
-	printf("%d --> pos\n", pos);
+	//printf("%d --> pos\n", pos);
 	ret = EXIT_SUCCESS;
     }
 

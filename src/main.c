@@ -47,6 +47,7 @@ void * aloca_municipio(int ibge, char * nome, float latitude, float longitude, i
 
 //informe um ponteiro de Municipio e todas suas informações serão mostradas
 void printa_municipio(Municipio * mun) {
+	printf("\n");
 	printf("EXIBINDO DADOS...\n\n");
 	printf("codigo_ibge: %d\n", mun->cod_ibge);
 	printf("nome: %s\n", mun->nome);
@@ -137,12 +138,19 @@ int main() {
 
 	for(int i = 0; i < QTD_CIDADES; i++) salva_municipio_json_hash(arq, i, &hash);
 
-	printa_hash(&hash);
+	//printa_hash(&hash);
 
-	busca_municipio_hash(&hash, 5002704);
+	int cod_ibge;
+	do {
+		printf("----------------------------------------------------\n");
+		printf("Informe o código do IBGE da cidade desejada: ");
+		scanf("%d", &cod_ibge);	
+
+		busca_municipio_hash(&hash, cod_ibge);
+
+	} while(cod_ibge > 0);
 
 	libera_hash(&hash);
-
 	jse_free(arq);
 
 	return EXIT_SUCCESS;
