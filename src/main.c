@@ -1,21 +1,16 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <math.h>
 #include "../include/youtube_episode_jsense/jsense.h"
-#include "hash.c"
+#include "kd.c"
 
-#define QTD_CIDADES 5570
-#define TAM_HASH 11139
-/* 
- * tamanho baseado na quantidade de dados
- * multiplicado por 2 associado ao primo mais próximo
-*/
+#define QTD_MUNICIPIOS 5570
 
 typedef struct {
 	int cod_ibge;
 	char nome[35];
-	float latitude;
-	float longitude;
+	double coord[2];
 	int capital;
 	int cod_uf;
 	int siafi_id;
@@ -23,44 +18,64 @@ typedef struct {
 	char fuso[50];
 } Municipio;
 
-//define a chave de cada município
-int get_key_municipio(void * mun) {
-	return (*((Municipio *) mun)).cod_ibge;
-}
-
 //a partir da passagem de parâmetros, constrói um "objeto" Município
-void * aloca_municipio(int ibge, char * nome, float latitude, float longitude, int capital, int uf, int id, int ddd, char * fuso) {
-	Municipio * cidade = malloc(sizeof(Municipio));
+void * aloca_municipio(int ibge, char * nome, double latitude, double longitude, int capital, int uf, int id, int ddd, char * fuso) {
+	Municipio * municipio = malloc(sizeof(Municipio));
 
-	cidade->cod_ibge = ibge;
-	strcpy(cidade->nome, nome);
-	cidade->latitude = latitude;
-	cidade->longitude = longitude;
-	cidade->capital = capital;
-	cidade->cod_uf = uf;
-	cidade->siafi_id = id;
-	cidade->ddd = ddd;
-	strcpy(cidade->fuso, fuso);
+	municipio->cod_ibge = ibge;
+	strcpy(municipio->nome, nome);
+	municipio->coord[0]= latitude;
+	municipio->coord[1]= longitude;
+	municipio->capital = capital;
+	municipio->cod_uf = uf;
+	municipio->siafi_id = id;
+	municipio->ddd = ddd;
+	strcpy(municipio->fuso, fuso);
 
-	return cidade;
+	return municipio;
 }
 
 //informe um ponteiro de Municipio e todas suas informações serão mostradas
-void printa_municipio(Municipio * mun) {
+void printa_municipio(void * cid) {
+	Municipio * mun = (Municipio *) cid;
+
+	printf("------------------------------\n");
+	printf("\n");
 	printf("EXIBINDO DADOS...\n\n");
 	printf("codigo_ibge: %d\n", mun->cod_ibge);
 	printf("nome: %s\n", mun->nome);
-	printf("latitude: %f\n", mun->latitude);
-	printf("longitude: %f\n", mun->longitude);
+	printf("latitude: %f\n", mun->coord[0]);
+	printf("longitude: %f\n", mun->coord[1]);
 	printf("capital: %d\n", mun->capital);
 	printf("codigo_uf: %d\n", mun->cod_uf);
 	printf("siafi_id: %d\n", mun->siafi_id);
 	printf("ddd: %d\n", mun->ddd);
 	printf("fuso_horario: %s\n", mun->fuso);
+	printf("\n");
 }
 
-//informe o json JSENSE e a posição da cidade no arquivo
-void salva_municipio_json_hash(JSENSE * arq, int pos, thash * hash) {
+double distancia_municipios(void * cid1, void * cid2) {
+	Municipio * mun1 = (Municipio *) cid1;
+	Municipio * mun2 = (Municipio *) cid2;
+
+	double aux;
+	double dist = 0;
+
+	for(int i = 0; i < 2; i++) {
+		aux = mun1->coord[i] - mun2->coord[i];
+		aux *= aux;
+		dist += aux;
+	}
+
+	return sqrt(dist);
+}
+
+double compara_coord(void * cid1, void * cid2, int eixo) {
+	return ((Municipio *) cid1)->coord[eixo] - ((Municipio *) cid2)->coord[eixo];
+}	
+
+//informe o json JSENSE e a posição da municipio no arquivo
+void salva_municipio_json_arv(JSENSE * arq, int pos, Arv * arv) {
 	int error;
 
 	char * campos[9] = 
@@ -81,7 +96,7 @@ void salva_municipio_json_hash(JSENSE * arq, int pos, thash * hash) {
 	int cod_ibge, capital, cod_uf, siafi_id, ddd;
 	char nome[35];
 	char fuso[50];
-	float latitude, longitude;
+	double latitude, longitude;
 
 	for(int i = 0; i < 9; i++) {
 		sprintf(operacao, "[%d].%s", pos, campos[i]);
@@ -119,29 +134,31 @@ void salva_municipio_json_hash(JSENSE * arq, int pos, thash * hash) {
 
 	Municipio * mun = aloca_municipio(cod_ibge, nome, latitude, longitude, capital, cod_uf, siafi_id, ddd, fuso);
 
-	insere_hash(hash, mun);
+	insere_kd(arv, mun);
 }
 
-void busca_municipio_hash(thash * hash, int key) {
-	Municipio * mun = busca_hash(hash, key);
+/*
+void busca_municipio_arv(Arv * arv, int key) {
+	Municipio * mun = busca_kd(arv, key);
 
 	if(mun) printa_municipio(mun);
 	else printf("Município não encontrado...\n");
 }
+*/
 
 int main() {
 	JSENSE * arq = jse_from_file("./file/municipios.json");
 	
-	thash hash;
-	constroi_hash(&hash, TAM_HASH, get_key_municipio);
+	Arv arv;
+	constroi_kd(&arv, 2, distancia_municipios, compara_coord, printa_municipio);
 
-	for(int i = 0; i < QTD_CIDADES; i++) salva_municipio_json_hash(arq, i, &hash);
+	for(int i = 0; i < QTD_MUNICIPIOS; i++) salva_municipio_json_arv(arq, i, &arv);
 
-	printa_hash(&hash);
+	printa_kd(&arv);
 
-	busca_municipio_hash(&hash, 5002704);
+	//busca_municipio_arv(&arv, 5002704);
 
-	apaga_hash(&hash);
+	libera_kd(&arv);
 
 	jse_free(arq);
 
