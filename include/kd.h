@@ -1,5 +1,7 @@
 #ifndef __KD__
 #define __KD__
+#include <stdio.h>
+#include <stdlib.h>
 typedef struct _node {
 	void * reg;
 	struct _node * esq;
@@ -27,6 +29,6 @@ void exibe_kd(Arv * arv);
 void exibe_node_kd(Arv * arv, Node * node);
 int conta_kd(Arv * arv);
 int conta_node_kd(Node * node);
-void atribui_distancias(Arv * arv, void * reg, Node * node, float * distancias, int tam, int * i); 
-void n_proximos_kd(Arv * arv, void * reg, int n); 
+void atribui_distancias(Arv * arv, void * reg, Node * node, float * distancias, int tam, int * i);
+float * n_proximos_kd(Arv * arv, void * reg, int n);
 #endif

@@ -1,5 +1,7 @@
 #ifndef __HASH__
 #define __HASH__
+#include <stdio.h>
+#include <stdlib.h>
 #include <stdint.h>
 typedef struct {
     uintptr_t * array;
