@@ -1,4 +1,5 @@
 #include "../include/kd.h"
+#include "../include/heap.h"
 
 void constroi_kd(Arv * arv, int dim, double (* dist)(void *, void *), double (* cmp)(void *, void *, int eixo), void (* exibe)(void *)) {
     arv->raiz = NULL;
@@ -80,10 +81,7 @@ void atribui_distancias(Arv * arv, void * reg, Node * node, float * distancias, 
 	    atribui_distancias(arv, reg, node->esq, distancias, tam, i);
 
 	    if(arv->dist(reg, node->reg)) {
-		arv->exibe(node->reg);
 		distancias[*i] = arv->dist(reg, node->reg);
-		printf("i: %d e dist: %f\n", *i, distancias[*i]);
-
 		(*i)++;
 	    }
 
@@ -92,16 +90,21 @@ void atribui_distancias(Arv * arv, void * reg, Node * node, float * distancias, 
     }
 }
 
-void n_proximos_kd(Arv * arv, void * reg, int n) {
+float * n_proximos_kd(Arv * arv, void * reg, int n) {
+    int i = 0;
     int qtd_nodes = conta_kd(arv)-1;
 
     float * distancias = (float *) calloc(qtd_nodes, sizeof(float));
-    void * proximos[n];
+    float * proximos = (float *) calloc(n, sizeof(float));
 
-    int i = 0;
     atribui_distancias(arv, reg, arv->raiz, distancias, qtd_nodes, &i);
-	
-    //printf("dist: %f\n", arv->dist(reg, arv->raiz->reg));
+
+    constroi_heap(distancias, qtd_nodes);
+    heap_sort(distancias, qtd_nodes);
+
+    for(i = 0; i < n; i++) proximos[i] = distancias[i];
 
     free(distancias);
+
+    return proximos;
 }
