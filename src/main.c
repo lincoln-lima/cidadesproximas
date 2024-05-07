@@ -3,8 +3,9 @@
 #include <string.h>
 #include <math.h>
 #include "../include/youtube_episode_jsense/jsense.h"
-#include "hash.c"
-#include "kd.c"
+#include "../include/hash.h"
+#include "../include/kd.h"
+#include "../include/heap.h"
 
 #define QTD_MUNICIPIOS 5570
 #define TAM_HASH 11139
@@ -26,7 +27,7 @@ typedef struct {
 
 //define a chave de cada município
 int get_key_municipio(void * mun) {
-	return (*((Municipio *) mun)).cod_ibge;
+    return (*((Municipio *) mun)).cod_ibge;
 }
 
 //a partir da passagem de parâmetros, constrói um "objeto" Município
@@ -147,7 +148,7 @@ Municipio * acessa_municipio_json(JSENSE * arq, int pos) {
 }
 
 /*
-void busca_municipio_hash(thash * arv, int key) {
+void busca_municipio_hash(thash * hash, int key) {
     Municipio * mun = busca_hash(hash, key);
 
     if(mun) exibe_municipio(mun);
@@ -176,32 +177,39 @@ int main() {
     constroi_kd(&arv, 2, distancia_municipios, compara_coord, exibe_municipio);
 
     for(int i = 0; i < QTD_MUNICIPIOS; i++) {
-		insere_hash(&hash, acessa_municipio_json(arq, i));
-		insere_kd(&arv, acessa_municipio_json(arq, i));
+	insere_hash(&hash, acessa_municipio_json(arq, i));
+	insere_kd(&arv, acessa_municipio_json(arq, i));
+    }
+
+    int cod_ibge = 2114007;
+    int qtd = 5;
+    //do {
+	//printf("----------------------------------------------------\n");
+	//printf("Informe o código do IBGE da cidade desejada: ");
+	//scanf("%d", &cod_ibge);
+
+	Municipio * mun = busca_hash(&hash, cod_ibge);
+
+	if(mun) {
+	    float * proximos = n_proximos_kd(&arv, mun, qtd);
+
+	    printf("Exibindo %d cidades mais próximas:\n", qtd);
+	    for(float * p = proximos; p < proximos + qtd ; p++) printf("%f\n", *p);
+
+	    free(proximos);
 	}
+	else printf("Município não encontrado...\n");
 
-	//printf("distancia: %f\n", distancia_municipios(busca_hash(&hash, 2114007), &(arv.raiz)));
 
-	int cod_ibge = 2114007;
-//	do {
-//		printf("----------------------------------------------------\n");
-//		printf("Informe o código do IBGE da cidade desejada: ");
-//		scanf("%d", &cod_ibge);
+	//busca_municipio_hash(&hash, cod_ibge);
 
-		Municipio * mun = busca_hash(&hash, cod_ibge);
-
-		if(mun)	n_proximos_kd(&arv, mun, 5);
-		else printf("Município não encontrado...\n");
-
-		//busca_municipio_hash(&hash, cod_ibge);
-
-	//} while(cod_ibge > 0);
+    //} while(cod_ibge > 0);
 
     //exibe_kd(&arv);
     
     //busca_municipio_arv(&arv, mun);
     
-	libera_hash(&hash);
+    libera_hash(&hash);
     libera_kd(&arv);
 
     jse_free(arq);
