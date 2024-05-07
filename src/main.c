@@ -14,8 +14,7 @@
 typedef struct {
 	int cod_ibge;
 	char nome[35];
-	float latitude;
-	float longitude;
+	double coord[2];
 	int capital;
 	int cod_uf;
 	int siafi_id;
@@ -34,8 +33,8 @@ void * aloca_municipio(int ibge, char * nome, float latitude, float longitude, i
 
 	cidade->cod_ibge = ibge;
 	strcpy(cidade->nome, nome);
-	cidade->latitude = latitude;
-	cidade->longitude = longitude;
+	cidade->coord[0] = latitude;
+	cidade->coord[1] = longitude;
 	cidade->capital = capital;
 	cidade->cod_uf = uf;
 	cidade->siafi_id = id;
@@ -46,22 +45,26 @@ void * aloca_municipio(int ibge, char * nome, float latitude, float longitude, i
 }
 
 //informe um ponteiro de Municipio e todas suas informações serão mostradas
-void printa_municipio(Municipio * mun) {
+void printa_municipio(void * cid) {
+	Municipio * mun = (Municipio *) cid;
+
+	printf("------------------------------\n");
 	printf("\n");
 	printf("EXIBINDO DADOS...\n\n");
 	printf("codigo_ibge: %d\n", mun->cod_ibge);
 	printf("nome: %s\n", mun->nome);
-	printf("latitude: %f\n", mun->latitude);
-	printf("longitude: %f\n", mun->longitude);
+	printf("latitude: %f\n", mun->coord[0]);
+	printf("longitude: %f\n", mun->coord[1]);
 	printf("capital: %d\n", mun->capital);
 	printf("codigo_uf: %d\n", mun->cod_uf);
 	printf("siafi_id: %d\n", mun->siafi_id);
 	printf("ddd: %d\n", mun->ddd);
 	printf("fuso_horario: %s\n", mun->fuso);
+	printf("\n");
 }
 
 //informe o json JSENSE e a posição da cidade no arquivo
-void salva_municipio_json_hash(JSENSE * arq, int pos, thash * hash) {
+Municipio * acessa_municipio_json(JSENSE * arq, int pos) {
 	int error;
 
 	char * campos[9] = 
@@ -82,7 +85,7 @@ void salva_municipio_json_hash(JSENSE * arq, int pos, thash * hash) {
 	int cod_ibge, capital, cod_uf, siafi_id, ddd;
 	char nome[35];
 	char fuso[50];
-	float latitude, longitude;
+	double latitude, longitude;
 
 	for(int i = 0; i < 9; i++) {
 		sprintf(operacao, "[%d].%s", pos, campos[i]);
@@ -118,9 +121,7 @@ void salva_municipio_json_hash(JSENSE * arq, int pos, thash * hash) {
 		}
 	}
 
-	Municipio * mun = aloca_municipio(cod_ibge, nome, latitude, longitude, capital, cod_uf, siafi_id, ddd, fuso);
-
-	insere_hash(hash, mun);
+	return aloca_municipio(cod_ibge, nome, latitude, longitude, capital, cod_uf, siafi_id, ddd, fuso);
 }
 
 void busca_municipio_hash(thash * hash, int key) {
@@ -136,7 +137,7 @@ int main() {
 	thash hash;
 	constroi_hash(&hash, TAM_HASH, get_key_municipio);
 
-	for(int i = 0; i < QTD_CIDADES; i++) salva_municipio_json_hash(arq, i, &hash);
+	for(int i = 0; i < QTD_CIDADES; i++) insere_hash(&hash, acessa_municipio_json(arq, i));
 
 	//printa_hash(&hash);
 
