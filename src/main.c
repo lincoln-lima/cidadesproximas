@@ -3,9 +3,15 @@
 #include <string.h>
 #include <math.h>
 #include "../include/youtube_episode_jsense/jsense.h"
+#include "hash.c"
 #include "kd.c"
 
 #define QTD_MUNICIPIOS 5570
+#define TAM_HASH 11139
+/*
+ * tamanho baseado na quantidade de dados
+ * multiplicado por 2 associado ao primo mais próximo
+*/
 
 typedef struct {
     int cod_ibge;
@@ -18,29 +24,30 @@ typedef struct {
     char fuso[50];
 } Municipio;
 
+//define a chave de cada município
 int get_key_municipio(void * mun) {
 	return (*((Municipio *) mun)).cod_ibge;
 }
 
 //a partir da passagem de parâmetros, constrói um "objeto" Município
 void * aloca_municipio(int ibge, char * nome, double latitude, double longitude, int capital, int uf, int id, int ddd, char * fuso) {
-    Municipio * municipio = malloc(sizeof(Municipio));
+    Municipio * mun = malloc(sizeof(Municipio));
 
-    municipio->cod_ibge = ibge;
-    strcpy(municipio->nome, nome);
-    municipio->coord[0]= latitude;
-    municipio->coord[1]= longitude;
-    municipio->capital = capital;
-    municipio->cod_uf = uf;
-    municipio->siafi_id = id;
-    municipio->ddd = ddd;
-    strcpy(municipio->fuso, fuso);
+    mun->cod_ibge = ibge;
+    strcpy(mun->nome, nome);
+    mun->coord[0]= latitude;
+    mun->coord[1]= longitude;
+    mun->capital = capital;
+    mun->cod_uf = uf;
+    mun->siafi_id = id;
+    mun->ddd = ddd;
+    strcpy(mun->fuso, fuso);
 
-    return municipio;
+    return mun;
 }
 
 //informe um ponteiro de Municipio e todas suas informações serão mostradas
-void printa_municipio(void * cid) {
+void exibe_municipio(void * cid) {
     Municipio * mun = (Municipio *) cid;
 
     printf("------------------------------\n");
@@ -79,7 +86,7 @@ double compara_coord(void * cid1, void * cid2, int eixo) {
 }	
 
 //informe o json JSENSE e a posição da municipio no arquivo
-void salva_municipio_json_arv(JSENSE * arq, int pos, Arv * arv) {
+Municipio * acessa_municipio_json(JSENSE * arq, int pos) {
     int error;
 
     char * campos[9] = 
@@ -136,16 +143,23 @@ void salva_municipio_json_arv(JSENSE * arq, int pos, Arv * arv) {
 	    }
     }
 
-    Municipio * mun = aloca_municipio(cod_ibge, nome, latitude, longitude, capital, cod_uf, siafi_id, ddd, fuso);
-
-    insere_kd(arv, mun);
+    return aloca_municipio(cod_ibge, nome, latitude, longitude, capital, cod_uf, siafi_id, ddd, fuso);
 }
+
+/*
+void busca_municipio_hash(thash * arv, int key) {
+    Municipio * mun = busca_hash(hash, key);
+
+    if(mun) exibe_municipio(mun);
+    else printf("Município não encontrado...\n");
+}
+*/
 
 /*
 void busca_municipio_arv(Arv * arv, int key) {
     Municipio * mun = busca_kd(arv, key);
 
-    if(mun) printa_municipio(mun);
+    if(mun) exibe_municipio(mun);
     else printf("Município não encontrado...\n");
 }
 */
@@ -153,17 +167,41 @@ void busca_municipio_arv(Arv * arv, int key) {
 int main() {
     JSENSE * arq = jse_from_file("./file/municipios.json");
     
+    thash hash;
+    constroi_hash(&hash, TAM_HASH, get_key_municipio);
+
+    //exibe_hash(&hash);
+
     Arv arv;
-    constroi_kd(&arv, 2, distancia_municipios, compara_coord, printa_municipio, get_key_municipio);
+    constroi_kd(&arv, 2, distancia_municipios, compara_coord, exibe_municipio);
 
-    for(int i = 0; i < QTD_MUNICIPIOS; i++) salva_municipio_json_arv(arq, i, &arv);
+    for(int i = 0; i < QTD_MUNICIPIOS; i++) {
+		insere_hash(&hash, acessa_municipio_json(arq, i));
+		insere_kd(&arv, acessa_municipio_json(arq, i));
+	}
 
-    //printa_kd(&arv);
-    Municipio * mun = aloca_municipio(4219853,"Zortéa",-27.4521,-51.552,0,42,950,49,"America/Sao_Paulo"); 
+	//printf("distancia: %f\n", distancia_municipios(busca_hash(&hash, 2114007), &(arv.raiz)));
+
+	int cod_ibge = 2114007;
+//	do {
+//		printf("----------------------------------------------------\n");
+//		printf("Informe o código do IBGE da cidade desejada: ");
+//		scanf("%d", &cod_ibge);
+
+		Municipio * mun = busca_hash(&hash, cod_ibge);
+
+		if(mun)	n_proximos_kd(&arv, mun, 5);
+		else printf("Município não encontrado...\n");
+
+		//busca_municipio_hash(&hash, cod_ibge);
+
+	//} while(cod_ibge > 0);
+
+    //exibe_kd(&arv);
     
-    n_proximos_kd(&arv,busca_kd(&arv, mun), 5);
     //busca_municipio_arv(&arv, mun);
     
+	libera_hash(&hash);
     libera_kd(&arv);
 
     jse_free(arq);
