@@ -3,7 +3,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "mun.h"
-#include "heap.h"
 typedef struct _node {
 	Municipio * mun;
 	struct _node * esq;
@@ -17,15 +16,16 @@ typedef struct {
 
 void constroi_kd(Arv * arv, int dim);
 void insere_kd(Arv * arv, Municipio * mun);
-void insere_node_kd(Arv * arv, Node ** node, Municipio * mun, int eixo);
+void _insere_node_kd(Arv * arv, Node ** node, Municipio * mun, int eixo);
 void * busca_kd(Arv * arv, Municipio * mun);
-void * busca_node_kd(Arv * arv, Node * node, Municipio * mun, int eixo);
+void * _busca_node_kd(Arv * arv, Node * node, Municipio * mun, int eixo);
 void libera_kd(Arv * arv);
-void libera_node_kd(Node * node);
+void _libera_node_kd(Node * node);
 void exibe_kd(Arv * arv);
-void exibe_node_kd(Arv * arv, Node * node);
+void _exibe_node_kd(Arv * arv, Node * node);
 int conta_kd(Arv * arv);
-int conta_node_kd(Node * node);
-int * atribui_distancias(Arv * arv, Municipio * mun, Node * node, float * distancias, int tam, int * i);
+int _conta_node_kd(Node * node);
+void _insertion_sort_mun_kd(int * codigos, float * distancias, int tam);
+void _calcula_dist_cod(Arv * arv, Municipio * mun, Node * node, float * distancias, int * codigos, int tam, int * i);
 int * n_proximos_kd(Arv * arv, Municipio * mun, int n);
 #endif
