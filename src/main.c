@@ -6,7 +6,6 @@
 #include "../include/mun.h"
 #include "../include/hash.h"
 #include "../include/kd.h"
-#include "../include/heap.h"
 
 #define QTD_MUNICIPIOS 5570
 #define TAM_HASH 11139
@@ -106,38 +105,41 @@ int main() {
     constroi_kd(&arv, 2);
 
     for(int i = 0; i < QTD_MUNICIPIOS; i++) {
-	insere_hash(&hash, acessa_municipio_json(arq, i));
-	insere_kd(&arv, acessa_municipio_json(arq, i));
+		insere_hash(&hash, acessa_municipio_json(arq, i));
+		insere_kd(&arv, acessa_municipio_json(arq, i));
     }
 
-    int cod_ibge = 2114007;
-    int qtd = 5;
-    //do {
-	//printf("----------------------------------------------------\n");
-	//printf("Informe o código do IBGE da cidade desejada: ");
-	//scanf("%d", &cod_ibge);
+    int cod_ibge, qtd;
+    do {
+		printf("----------------------------------------------------\n");
+		printf("INFORME\n");
+		printf("Código do IBGE da cidade desejada: ");
+		scanf("%d", &cod_ibge);
 
-	Municipio * mun = busca_hash(&hash, cod_ibge);
+		Municipio * mun = busca_hash(&hash, cod_ibge);
 
-	if(mun) {
-	    int * proximos = n_proximos_kd(&arv, mun, qtd);
+		if(mun) {
+			exibe_municipio(mun);
 
-	    printf("Exibindo %d cidades mais próximas:\n", qtd);
-	    for(int * p = proximos; p < proximos + qtd ; p++) printf("%d\n", *p);
+			printf("Quantidade de cidades mais próximas: ");
+			scanf("%d", &qtd);
+			int * proximos = n_proximos_kd(&arv, mun, qtd);
 
-	    free(proximos);
-	}
-	else printf("Município não encontrado...\n");
+			printf("\n");
 
+			printf("Código(s) IBGE da(s) %d cidade(s) mais próxima(s):\n", qtd);
+			for(int * p = proximos; p < proximos + qtd ; p++) printf("%d\n", *p);
 
-	//busca_municipio_hash(&hash, cod_ibge);
+			printf("\n");
 
-    //} while(cod_ibge > 0);
+			free(proximos);
+		}
+		else printf("\n!!!Município não encontrado!!!\n");
+
+    } while(cod_ibge > 0);
 
     //exibe_kd(&arv);
-    
-    //busca_municipio_arv(&arv, mun);
-    
+		
     libera_hash(&hash);
     libera_kd(&arv);
 
