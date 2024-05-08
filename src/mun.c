@@ -26,9 +26,7 @@ void * aloca_municipio(int ibge, char * nome, double latitude, double longitude,
 void exibe_municipio(void * cid) {
     Municipio * mun = (Municipio *) cid;
 
-    printf("------------------------------\n");
     printf("\n");
-    printf("EXIBINDO DADOS...\n\n");
     printf("codigo_ibge: %d\n", mun->cod_ibge);
     printf("nome: %s\n", mun->nome);
     printf("latitude: %f\n", mun->coord[0]);
