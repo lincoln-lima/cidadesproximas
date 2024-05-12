@@ -4,7 +4,8 @@
 #include <math.h>
 #include "../include/youtube_episode_jsense/jsense.h"
 #include "../include/mun.h"
-#include "../include/hash.h"
+#include "../include/hash_int.h"
+#include "../include/hash_string.h"
 #include "../include/kd.h"
 
 #define QTD_MUNICIPIOS 5570
@@ -78,25 +79,53 @@ Municipio * acessa_municipio_json(JSENSE * arq, int pos) {
 int main() {
     JSENSE * arq = jse_from_file("./file/municipios.json");
     
-    thash hash;
-    constroi_hash(&hash, TAM_HASH, get_key_municipio_cod_ibge);
+    HashInt hash_int;
+    constroi_hash_int(&hash_int, TAM_HASH, get_key_municipio_cod_ibge);
+
+	HashString hash_string;
+	constroi_hash_string(&hash_string, TAM_HASH, get_key_municipio_nome);
 
     Arv arv;
     constroi_kd(&arv, 2);
 
     for(int i = 0; i < QTD_MUNICIPIOS; i++) {
-		insere_hash(&hash, acessa_municipio_json(arq, i));
+		insere_hash_int(&hash_int, acessa_municipio_json(arq, i));
+		insere_hash_string(&hash_string, acessa_municipio_json(arq, i));
 		insere_kd(&arv, acessa_municipio_json(arq, i));
     }
 
+	char nome[35];
     int cod_ibge, qtd;
     do {
 		printf("----------------------------------------------------\n");
 		printf("INFORME\n");
-		printf("Código do IBGE da cidade desejada: ");
-		scanf("%d", &cod_ibge);
+		printf("Nome da cidade desejada:\n");
+		scanf(" %[^\n]", nome);
 
-		Municipio * mun = busca_hash(&hash, cod_ibge);
+		Municipio * mun = NULL;
+		Municipio ** muns = (Municipio **) busca_hash_string(&hash_string, nome);
+
+		//exibe_municipio(muns[0]);
+
+		int qtd_muns = 0;
+		while(muns[qtd_muns++]);
+
+		printf("qtd muns: %d\n", qtd_muns);
+
+		if(qtd_muns > 1) {
+			printf("Escolha o munícipio desejado\n");
+
+			for(int i = 0; i < qtd_muns; i++) {
+				printf("Opção: %d\n", i);
+				exibe_municipio(muns[i]);
+			}
+			
+			int op;
+			scanf("%d", &op);
+
+			mun = (Municipio *) muns[op];
+		}
+		else if(qtd_muns == 1) mun = (Municipio *) muns[0];
 
 		if(mun) {
 			exibe_municipio(mun);
@@ -116,12 +145,13 @@ int main() {
 		}
 		else printf("\n!!!Município não encontrado!!!\n");
 
-    } while(cod_ibge > 0);
+    } while(nome);
 
     //exibe_hash(&hash);
     //exibe_kd(&arv);
 		
-    libera_hash(&hash);
+    libera_hash_int(&hash_int);
+    libera_hash_string(&hash_string);
     libera_kd(&arv);
 
     jse_free(arq);
