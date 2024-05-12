@@ -26,7 +26,7 @@ unsigned int fiftyhash(unsigned int x) {
     return x;
 }
 
-int _calcula_pos(int key, int i, HashInt * hash) {
+int _calcula_pos(HashInt * hash, int key, int i) {
     // hash duplo dos elementos
     return (fiftyhash(key) + i * int32hash(key)) % hash->max_size;
 }
@@ -44,11 +44,8 @@ int insere_hash_int(HashInt * hash, void * bucket) {
 		int key = hash->get_key(bucket);
 		int i = 0;
 		
-		do {
-			pos = _calcula_pos(key, i, hash);
-			i++; 
-		} while(hash->array[pos] != 0 && hash->array[pos] != hash->deleted);
 		//garante que a posição para alocação da estrutura esteja desocupada
+		for(pos = _calcula_pos(hash, key, i); hash->array[pos] != 0; pos = _calcula_pos(hash, key, ++i));
 
 		//armazena ponteiro para o bucket específico
 		hash->array[pos] = (uintptr_t) bucket;
@@ -66,11 +63,10 @@ void * busca_hash_int(HashInt * hash, int key) {
     void * ret = NULL; 
 
     int i = 0;
-    int pos = _calcula_pos(key, i, hash); 
 
-    for(i; hash->array[pos] != 0 && !ret; i++) {
+    for(int pos = _calcula_pos(hash, key, i); hash->array[pos] != 0 && !ret; i++) {
 		if (hash->get_key((void *) hash->array[pos]) == key) ret = (void *) hash->array[pos];
-		else pos = _calcula_pos(key, i, hash); 
+		else pos = _calcula_pos(hash, key, i); 
     }
 
     return ret;
@@ -87,33 +83,9 @@ int constroi_hash_int(HashInt * hash, int n_buckets, int (* get_key)(void *)) {
 		//inicialização dos parâmetros necessários
 		hash->size = 0;
 		hash->max_size = n_buckets + 1;
-		hash->deleted = (uintptr_t) &(hash->size);
 		hash->get_key = get_key;
 
 		ret = EXIT_SUCCESS;
-    }
-
-    return ret;
-}
-
-//remove elemento específico
-int remover_hash_int(HashInt * hash, int key) {
-    int ret = EXIT_FAILURE;
-
-    int i = 0;
-    int pos = _calcula_pos(key, i, hash); 
-
-    //caso determinada posição esteja nula, o elemento não deve existir
-    for(i; hash->array[pos] != 0; i++) {
-	//compara a chave do registro com a chave informada na chamada da função
-        if(hash->get_key((void *) hash->array[pos]) == key) {
-			//diminui tamanho ocupado, libera a posição e diz que a mesma foi deletada
-			hash->size--;
-			free((void *) hash->array[pos]);
-			hash->array[pos] = hash->deleted;
-			ret = EXIT_SUCCESS;
-		}
-        else pos = _calcula_pos(key, i, hash); 
     }
 
     return ret;
@@ -123,7 +95,7 @@ int remover_hash_int(HashInt * hash, int key) {
 void libera_hash_int(HashInt * hash) {
     //libera posição a posição do array
     for(int pos = 0; pos < hash->max_size; pos++) {
-		if(hash->array[pos] != 0 && hash->array[pos] != hash->deleted) free((void *) hash->array[pos]);
+		if(hash->array[pos] != 0) free((void *) hash->array[pos]);
     }
 
     //libera o array
