@@ -15,7 +15,7 @@
  * multiplicado por 2 associado ao primo mais próximo
 */
 
-//informe o json JSENSE e a posição da municipio no arquivo
+//informe o json JSENSE e a posição do municipio no arquivo
 Municipio * acessa_municipio_json(JSENSE * arq, int pos) {
     int error;
 
@@ -77,82 +77,76 @@ Municipio * acessa_municipio_json(JSENSE * arq, int pos) {
 }
 
 int main() {
-    JSENSE * arq = jse_from_file("./file/municipios.json");
-    
-    HashInt hash_int;
-    constroi_hash_int(&hash_int, TAM_HASH, get_key_municipio_cod_ibge);
+	JSENSE * arq = jse_from_file("./file/municipios.json");
+
+	HashInt hash_int;
+	constroi_hash_int(&hash_int, TAM_HASH, get_key_municipio_cod_ibge);
+
+	Arv arv;
+	constroi_kd(&arv, 2);
 
 	HashString hash_string;
 	constroi_hash_string(&hash_string, TAM_HASH, get_key_municipio_nome);
 
-    Arv arv;
-    constroi_kd(&arv, 2);
-
-    for(int i = 0; i < QTD_MUNICIPIOS; i++) {
+	for(int i = 0; i < QTD_MUNICIPIOS; i++) {
 		insere_hash_int(&hash_int, acessa_municipio_json(arq, i));
-		insere_hash_string(&hash_string, acessa_municipio_json(arq, i));
 		insere_kd(&arv, acessa_municipio_json(arq, i));
-    }
+		insere_hash_string(&hash_string, acessa_municipio_json(arq, i));
+	}
 
 	char nome[35];
-    int cod_ibge, qtd;
-    do {
-		printf("----------------------------------------------------\n");
-		printf("INFORME\n");
-		printf("Nome da cidade desejada:\n");
-		scanf(" %[^\n]", nome);
 
-		Municipio * mun = NULL;
-		Municipio ** muns = (Municipio **) busca_hash_string(&hash_string, nome);
+	printf("----------------------------------------------------\n");
+	printf("INFORME\n");
+	printf("Nome da cidade desejada: ");
+	scanf(" %[^\n]", nome);
 
-		//exibe_municipio(muns[0]);
+	Municipio * mun = NULL;
+	Municipio ** muns = (Municipio **) busca_hash_string(&hash_string, nome);
 
-		int qtd_muns = 0;
-		while(muns[qtd_muns++]);
+	int qtd_muns = 0;
+	while(muns[qtd_muns++]);
 
-		printf("qtd muns: %d\n", qtd_muns);
+	qtd_muns--;
 
-		if(qtd_muns > 1) {
-			printf("Escolha o munícipio desejado\n");
+	if(qtd_muns > 1) {
+		int op = 0;
 
-			for(int i = 0; i < qtd_muns; i++) {
-				printf("Opção: %d\n", i);
-				exibe_municipio(muns[i]);
-			}
-			
-			int op;
+		for(int i = 0; i < qtd_muns; i++) {
+			exibe_municipio(muns[i]);
+			printf("OPÇÃO: %d\n", i+1);
+		}
+		
+		while(op < 1 || op > qtd_muns) {
+			printf("\nEscolha a opção desejada: ");
 			scanf("%d", &op);
 
-			mun = (Municipio *) muns[op];
+			if(op < 1 || op > qtd_muns) printf("\n!!!Opção inválida!!!\n");
 		}
-		else if(qtd_muns == 1) mun = (Municipio *) muns[0];
 
-		if(mun) {
-			exibe_municipio(mun);
+		mun = (Municipio *) muns[op-1];
+		free(muns);
+	}
+	else if(qtd_muns == 1) mun = (Municipio *) muns[0];
 
-			printf("Quantidade de cidades mais próximas: ");
-			scanf("%d", &qtd);
-			int * proximos = n_proximos_kd(&arv, mun, qtd);
+	if(mun) {
+		int qtd_prox;
+		printf("\nQuantidade de cidades mais próximas: ");
+		scanf("%d", &qtd_prox);
 
-			printf("\n");
+		int * proximos = n_proximos_kd(&arv, mun, qtd_prox);
 
-			printf("Código(s) IBGE da(s) %d cidade(s) mais próxima(s):\n", qtd);
-			for(int * p = proximos; p < proximos + qtd ; p++) printf("%d\n", *p);
+		printf("\n");
+		printf("Dados da(s) %d cidade(s) mais próxima(s):\n", qtd_prox);
+		for(int * p = proximos; p < proximos + qtd_prox; p++) exibe_municipio(busca_hash_int(&hash_int, *p)); 
 
-			printf("\n");
-
-			free(proximos);
-		}
-		else printf("\n!!!Município não encontrado!!!\n");
-
-    } while(nome);
-
-    //exibe_hash(&hash);
-    //exibe_kd(&arv);
+		free(proximos);
+	}
+	else printf("\n!!!Município não encontrado!!!\n");
 		
     libera_hash_int(&hash_int);
-    libera_hash_string(&hash_string);
     libera_kd(&arv);
+    libera_hash_string(&hash_string);
 
     jse_free(arq);
 
