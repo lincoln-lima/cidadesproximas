@@ -1,4 +1,3 @@
-#include <stdlib.h>
 #include "../include/hash.h"
 
 u_int32_t int32hash(u_int32_t a)
@@ -27,116 +26,86 @@ unsigned int fiftyhash(unsigned int x) {
     return x;
 }
 
-int calcula_pos(int key, int i, thash * hash) {
+int _calcula_pos(Hash * hash, int key, int i) {
     // hash duplo dos elementos
     return (fiftyhash(key) + i * int32hash(key)) % hash->max_size;
 }
 
-int insere_hash(thash * hash, void * bucket) {
+int insere_hash(Hash * hash, void * bucket) {
     int ret;
 
     //checagem se o array da tabela está cheio
     if(hash->size == hash->max_size) {
-	free(bucket);
-	ret = EXIT_FAILURE;
+		free(bucket);
+		ret = EXIT_FAILURE;
     }
     else {
-	int pos;
-	int key = hash->get_key(bucket);
-	int i = 0;
-	
-	do {
-	    pos = calcula_pos(key, i, hash);
-	    i++; 
-	} while(hash->array[pos] != 0 && hash->array[pos] != hash->deleted);
-	//garante que a posição para alocação da estrutura esteja desocupada
+		int pos;
+		int key = hash->get_key(bucket);
+		int i = 0;
+		
+		//garante que a posição para alocação da estrutura esteja desocupada
+		for(pos = _calcula_pos(hash, key, i); hash->array[pos] != 0; pos = _calcula_pos(hash, key, ++i));
 
-	//armazena ponteiro para o bucket específico
-	hash->array[pos] = (uintptr_t) bucket;
-	hash->size++;
-	//acréscimo ao tamanho ocupado pelo vetor;
+		//armazena ponteiro para o bucket específico
+		hash->array[pos] = (uintptr_t) bucket;
+		hash->size++;
+		//acréscimo ao tamanho ocupado pelo vetor;
 
-	//printf("%d --> pos\n", pos);
-	ret = EXIT_SUCCESS;
+		ret = EXIT_SUCCESS;
     }
 
     return ret;
 }
 
-void * busca_hash(thash * hash, int key) {
+void * busca_hash(Hash * hash, int key) {
     //criação do objeto para retorno
     void * ret = NULL; 
 
     int i = 0;
-    int pos = calcula_pos(key, i, hash); 
 
-    for(i; hash->array[pos] != 0 && !ret; i++) {
-	if (hash->get_key((void *) hash->array[pos]) == key) ret = (void *) hash->array[pos];
-	else pos = calcula_pos(key, i, hash); 
+    for(int pos = _calcula_pos(hash, key, i); hash->array[pos] != 0 && !ret; i++) {
+		if (hash->get_key((void *) hash->array[pos]) == key) ret = (void *) hash->array[pos];
+		else pos = _calcula_pos(hash, key, i); 
     }
 
     return ret;
 }
 
-int constroi_hash(thash * hash, int n_buckets, int (* get_key)(void *)) {
+int constroi_hash(Hash * hash, int n_buckets, int (* get_key)(void *)) {
     int ret;
     //aloca espaco para array da tabela
     hash->array = calloc(sizeof(void *), n_buckets + 1);
 
     //em caso de falha na alocação
-    if(hash->array == NULL)
-        ret = EXIT_FAILURE;
+    if(hash->array == NULL) ret = EXIT_FAILURE;
     else {
-	//inicialização dos parâmetros necessários
-	hash->size = 0;
-	hash->max_size = n_buckets + 1;
-	hash->deleted = (uintptr_t) &(hash->size);
-	hash->get_key = get_key;
+		//inicialização dos parâmetros necessários
+		hash->size = 0;
+		hash->max_size = n_buckets + 1;
+		hash->get_key = get_key;
 
-	ret = EXIT_SUCCESS;
-    }
-
-    return ret;
-}
-
-//remove elemento específico
-int remover_hash(thash * hash, int key) {
-    int ret = EXIT_FAILURE;
-
-    int i = 0;
-    int pos = calcula_pos(key, i, hash); 
-
-    //caso determinada posição esteja nula, o elemento não deve existir
-    for(i; hash->array[pos] != 0; i++) {
-	//compara a chave do registro com a chave informada na chamada da função
-        if(hash->get_key((void *) hash->array[pos]) == key) {
-	    //diminui tamanho ocupado, libera a posição e diz que a mesma foi deletada
-	    hash->size--;
-	    free((void *) hash->array[pos]);
-	    hash->array[pos] = hash->deleted;
-	    ret = EXIT_SUCCESS;
-	}
-        else pos = calcula_pos(key, i, hash); 
+		ret = EXIT_SUCCESS;
     }
 
     return ret;
 }
 
 //elimina todos os registros da tabela
-void libera_hash(thash * hash) {
+void libera_hash(Hash * hash) {
     //libera posição a posição do array
     for(int pos = 0; pos < hash->max_size; pos++) {
-	if(hash->array[pos] != 0 && hash->array[pos] != hash->deleted) free((void *) hash->array[pos]);
+		if(hash->array[pos] != 0) free((void *) hash->array[pos]);
     }
 
     //libera o array
     free(hash->array);
 }
 
-void printa_hash(thash * hash) {
+void exibe_hash(Hash * hash) {
     for(int pos = 0; pos < hash->max_size; pos++) {
         printf("%d: ", pos);
-	if(hash->array[pos] != 0) printf("%d\n\n", hash->get_key((void *) hash->array[pos]));
-	else printf("%ld\n\n", hash->array[pos]);
+		if(hash->array[pos] != 0) printf("%d\n\n", hash->get_key((void *) hash->array[pos]));
+		else printf("%ld\n\n", hash->array[pos]);
     }
 }
