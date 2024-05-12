@@ -1,8 +1,12 @@
 #include "../include/mun.h"
 
 //define a chave de cada município
-int get_key_municipio(void * mun) {
+int get_key_municipio_cod_ibge(void * mun) {
     return (*((Municipio *) mun)).cod_ibge;
+}
+
+char * get_key_municipio_nome(void * mun) {
+	return (*((Municipio *) mun)).nome;
 }
 
 //a partir da passagem de parâmetros, constrói um "objeto" Município

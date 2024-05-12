@@ -79,7 +79,7 @@ int main() {
     JSENSE * arq = jse_from_file("./file/municipios.json");
     
     thash hash;
-    constroi_hash(&hash, TAM_HASH, get_key_municipio);
+    constroi_hash(&hash, TAM_HASH, get_key_municipio_cod_ibge);
 
     Arv arv;
     constroi_kd(&arv, 2);

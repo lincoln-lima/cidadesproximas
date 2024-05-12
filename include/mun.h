@@ -15,7 +15,8 @@ typedef struct {
     char fuso[50];
 } Municipio;
 
-int get_key_municipio(void * mun);
+int get_key_municipio_cod_ibge(void * mun);
+char * get_key_municipio_nome(void * mun);
 void * aloca_municipio(int ibge, char * nome, double latitude, double longitude, int capital, int uf, int id, int ddd, char * fuso);
 void exibe_municipio(void * cid);
 double compara_coord(void * cid1, void * cid2, int eixo); 
