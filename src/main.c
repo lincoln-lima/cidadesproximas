@@ -75,31 +75,11 @@ Municipio * acessa_municipio_json(JSENSE * arq, int pos) {
     return aloca_municipio(cod_ibge, nome, latitude, longitude, capital, cod_uf, siafi_id, ddd, fuso);
 }
 
-/*
-void busca_municipio_hash(thash * hash, int key) {
-    Municipio * mun = busca_hash(hash, key);
-
-    if(mun) exibe_municipio(mun);
-    else printf("Município não encontrado...\n");
-}
-*/
-
-/*
-void busca_municipio_arv(Arv * arv, int key) {
-    Municipio * mun = busca_kd(arv, key);
-
-    if(mun) exibe_municipio(mun);
-    else printf("Município não encontrado...\n");
-}
-*/
-
 int main() {
     JSENSE * arq = jse_from_file("./file/municipios.json");
     
     thash hash;
     constroi_hash(&hash, TAM_HASH, get_key_municipio);
-
-    //exibe_hash(&hash);
 
     Arv arv;
     constroi_kd(&arv, 2);
@@ -138,6 +118,7 @@ int main() {
 
     } while(cod_ibge > 0);
 
+    //exibe_hash(&hash);
     //exibe_kd(&arv);
 		
     libera_hash(&hash);

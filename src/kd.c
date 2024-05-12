@@ -18,13 +18,13 @@ void _insere_node_kd(Arv * arv, Node ** node, Municipio * mun, int eixo) {
     }
 
     else if(compara_coord((*node)->mun, mun, eixo) > 0) _insere_node_kd(arv, &((*node)->esq), mun, ++eixo % arv->dim);
-    //else if(compara_coord((*node)->mun, mun, eixo) < 0) insere_node_kd(arv, &((*node)->dir), mun, ++eixo % arv->dim);
     else _insere_node_kd(arv, &((*node)->dir), mun, ++eixo % arv->dim);
 }
 
 void * busca_kd(Arv * arv, Municipio * mun) {
     return _busca_node_kd(arv, arv->raiz, mun, 0);
 }
+
 void * _busca_node_kd(Arv * arv, Node * node, Municipio * mun, int eixo) {
     void * ret;
 
@@ -88,6 +88,7 @@ void _insertion_sort_mun_kd(int * codigos, float * distancias, int tam) {
 
 			j--;
 		}
+
 		distancias[j+1] = key_d;
 		codigos[j+1] = key_m;
 	}	
