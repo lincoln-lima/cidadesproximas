@@ -36,9 +36,6 @@ void * _busca_node_kd(Arv * arv, Node * node, Municipio * mun, int eixo) {
     return ret;
 }
 
-//int remove_kd(Arv * arv, Municipio * mun);
-//int remove_node_kd(Arv * arv, Node * node, Municipio * mun);
-
 void libera_kd(Arv * arv) {
     _libera_node_kd(arv->raiz);
 }
@@ -94,10 +91,10 @@ void _insertion_sort_mun_kd(int * codigos, float * distancias, int tam) {
 	}	
 }
 
-void _calcula_dist_cod(Arv * arv, Municipio * mun, Node * node, float * distancias, int * codigos, int tam, int * i) {
+void _calcula_dist_cod(Municipio * mun, Node * node, float * distancias, int * codigos, int tam, int * i) {
     if(*i < tam) {
 		if(node) {
-			_calcula_dist_cod(arv, mun, node->esq, distancias, codigos, tam, i);
+			_calcula_dist_cod(mun, node->esq, distancias, codigos, tam, i);
 
 			if(distancia_municipios(mun, node->mun)) {
 				distancias[*i] = distancia_municipios(mun, node->mun);
@@ -108,7 +105,7 @@ void _calcula_dist_cod(Arv * arv, Municipio * mun, Node * node, float * distanci
 				_insertion_sort_mun_kd(codigos, distancias, *i);
 			}
 
-			_calcula_dist_cod(arv, mun, node->dir, distancias, codigos, tam, i);
+			_calcula_dist_cod(mun, node->dir, distancias, codigos, tam, i);
 		}
     }
 }
@@ -120,7 +117,7 @@ int * n_proximos_kd(Arv * arv, Municipio * mun, int n) {
     float * distancias = (float *) calloc(qtd_nodes, sizeof(float));
 	int * codigos = (int *) calloc(qtd_nodes, sizeof(int));
 
-    _calcula_dist_cod(arv, mun, arv->raiz, distancias, codigos, qtd_nodes, &i);
+    _calcula_dist_cod(mun, arv->raiz, distancias, codigos, qtd_nodes, &i);
 
 	int * proximos = (int *) calloc(n, sizeof(int));
 

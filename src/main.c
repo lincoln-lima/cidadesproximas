@@ -78,8 +78,8 @@ Municipio * acessa_municipio_json(JSENSE * arq, int pos) {
 int main() {
     JSENSE * arq = jse_from_file("./file/municipios.json");
     
-    thash hash;
-    constroi_hash(&hash, TAM_HASH, get_key_municipio);
+	Hash hash;
+    constroi_hash(&hash, TAM_HASH, get_key_municipio_cod_ibge);
 
     Arv arv;
     constroi_kd(&arv, 2);
@@ -90,37 +90,32 @@ int main() {
     }
 
     int cod_ibge, qtd;
-    do {
-		printf("----------------------------------------------------\n");
-		printf("INFORME\n");
-		printf("Código do IBGE da cidade desejada: ");
-		scanf("%d", &cod_ibge);
 
-		Municipio * mun = busca_hash(&hash, cod_ibge);
+	printf("----------------------------------------------------\n");
+	printf("INFORME\n");
+	printf("Código do IBGE da cidade desejada: ");
+	scanf("%d", &cod_ibge);
 
-		if(mun) {
-			exibe_municipio(mun);
+	Municipio * mun = busca_hash(&hash, cod_ibge);
 
-			printf("Quantidade de cidades mais próximas: ");
-			scanf("%d", &qtd);
-			int * proximos = n_proximos_kd(&arv, mun, qtd);
+	if(mun) {
+		exibe_municipio(mun);
 
-			printf("\n");
+		printf("Quantidade de cidades mais próximas: ");
+		scanf("%d", &qtd);
+		int * proximos = n_proximos_kd(&arv, mun, qtd);
 
+		printf("\n");
+
+		if(qtd > 0) {
 			printf("Código(s) IBGE da(s) %d cidade(s) mais próxima(s):\n", qtd);
 			for(int * p = proximos; p < proximos + qtd ; p++) printf("%d\n", *p);
-
-			printf("\n");
-
-			free(proximos);
 		}
-		else printf("\n!!!Município não encontrado!!!\n");
 
-    } while(cod_ibge > 0);
+		free(proximos);
+	}
+	else printf("\n!!!Município não encontrado!!!\n");
 
-    //exibe_hash(&hash);
-    //exibe_kd(&arv);
-		
     libera_hash(&hash);
     libera_kd(&arv);
 

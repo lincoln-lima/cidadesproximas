@@ -1,5 +1,5 @@
-#ifndef __KD__
-#define __KD__
+#ifndef __KDMUN__
+#define __KDMUN__
 #include <stdio.h>
 #include <stdlib.h>
 #include "mun.h"
@@ -26,6 +26,6 @@ void _exibe_node_kd(Arv * arv, Node * node);
 int conta_kd(Arv * arv);
 int _conta_node_kd(Node * node);
 void _insertion_sort_mun_kd(int * codigos, float * distancias, int tam);
-void _calcula_dist_cod(Arv * arv, Municipio * mun, Node * node, float * distancias, int * codigos, int tam, int * i);
+void _calcula_dist_cod(Municipio * mun, Node * node, float * distancias, int * codigos, int tam, int * i);
 int * n_proximos_kd(Arv * arv, Municipio * mun, int n);
 #endif
