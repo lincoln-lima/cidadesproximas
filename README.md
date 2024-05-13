@@ -28,5 +28,11 @@ cd include/
 git clone https://gitlab.com/greggink/youtube_episode_jsense.git
 ```
 O link do repositório sempre estará disponível no diretório "include"
+## Compilando e executando
+Com um compilador C basta compilar todos os arquivos do diretório "src" e executá-lo
+```
+gcc -o run src/*.c -lm
+./run
+```
 ## Tudo pronto
 Agora é só utilizar!
